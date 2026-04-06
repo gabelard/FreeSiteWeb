@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expertise | DevPro - Ingénierie Web</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --accent: #007aff;
+            --primary-light: #00d4ff;
+            --bg: #000000;
+            --card: #0a0a0a;
+            --text-main: #ffffff;
+            --text-dim: #888888;
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        * { box-sizing: border-box; }
+        body { background-color: var(--bg); color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; line-height: 1.6; overflow-x: hidden; }
+
+        /* NAVIGATION */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 5%; position: fixed; width: 100%; top: 0; z-index: 1000;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
+        }
+        .logo { font-weight: 900; font-size: 1.5rem; letter-spacing: -1.5px; text-decoration: none; color: white; }
+        .logo span { color: var(--accent); }
+        .nav-links { display: flex; gap: 25px; align-items: center; }
+        .nav-links a { text-decoration: none; color: var(--text-dim); font-size: 0.9rem; font-weight: 600; transition: 0.3s; }
+        .nav-links a:hover { color: var(--accent); }
+        .btn-login-nav { background: white; color: black; padding: 10px 20px; border-radius: 12px; font-weight: 800; border: none; cursor: pointer; transition: 0.3s; }
+
+        /* CONTENT */
+        .page-header { padding: 180px 10% 80px; text-align: center; background: radial-gradient(circle at 50% 0%, #001d3d 0%, #000 60%); }
+        .page-header h1 { font-size: 4rem; font-weight: 900; letter-spacing: -2px; margin-bottom: 20px; }
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; padding: 0 10% 100px; }
+        .service-card { background: var(--card); border: 1px solid var(--border); padding: 40px; border-radius: 32px; transition: 0.4s; position: relative; }
+        .service-card:hover { transform: translateY(-10px); border-color: var(--accent); background: #0e0e0e; }
+        .tag { background: rgba(0, 122, 255, 0.1); color: var(--accent); padding: 5px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+
+        /* AUTH MODAL */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(20px); display: none; align-items: center; justify-content: center; z-index: 3000; }
+        .auth-modal { background: #0a0a0a; border: 1px solid var(--border); padding: 40px; border-radius: 32px; width: 90%; max-width: 400px; text-align: center; }
+        input { width: 100%; padding: 16px; margin-bottom: 20px; border-radius: 12px; border: 1px solid #222; background: #000; color: white; font-family: inherit; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--accent); }
+        .btn-primary { background: linear-gradient(90deg, var(--accent), var(--primary-light)); color: white; padding: 18px; border-radius: 16px; font-weight: 800; border: none; cursor: pointer; width: 100%; transition: 0.3s; }
+        .btn-primary:hover { transform: scale(1.02); opacity: 0.9; }
+        .hidden { display: none; }
+        .forgot-pass { display: block; text-align: right; margin-top: -10px; margin-bottom: 20px; font-size: 0.75rem; color: var(--text-dim); cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo">Dev<span>Pro</span></a>
+        <div class="nav-links">
+            <a href="index.html">Accueil</a>
+            <a href="services.html" style="color: white;">Expertise</a>
+            <a href="contact.html">Contact</a>
+            <a href="boutique.html">Boutique</a>
+            <button onclick="handleNavAction()" id="nav-btn" class="btn-login-nav">Espace Client</button>
+        </div>
+    </nav>
+
+    <header class="page-header">
+        <span class="tag">Nos Compétences</span>
+        <h1>L'Art du Code.</h1>
+        <p>Infrastructures numériques robustes pour projets ambitieux.</p>
+    </header>
+
+    <main class="services-grid">
+        <div class="service-card">
+            <h3>Interfaces Haute-Couture</h3>
+            <p>Design exclusif centré sur l'expérience utilisateur et une identité visuelle marquante.</p>
+            <span class="tag">Figma • GSAP • NextJS</span>
+        </div>
+        <div class="service-card">
+            <h3>Écosystèmes E-commerce</h3>
+            <p>Boutiques ultra-rapides conçues pour la conversion et la scalabilité.</p>
+            <span class="tag">Shopify • Stripe • Headless</span>
+        </div>
+    </main>
+
+    <div id="auth-overlay" class="modal-overlay">
+        <div class="auth-modal">
+            <div id="step-login">
+                <h2 style="font-weight: 900; margin-bottom: 25px;">Connexion Client</h2>
+                <input type="email" id="login-user" placeholder="Email">
+                <input type="password" id="login-pass" placeholder="Mot de passe">
+                <span class="forgot-pass" onclick="switchStep('step-forgot')">Mot de passe oublié ?</span>
+                <button onclick="handleLogin()" class="btn-primary">Accéder à l'espace</button>
+                <p style="font-size: 0.8rem; color: #444; margin-top: 20px;">Pas encore client ? <span onclick="switchStep('step-register')" style="color: var(--accent); cursor: pointer;">S'inscrire</span></p>
+            </div>
+
+            <div id="step-register" class="hidden">
+                <h2 style="font-weight: 900; margin-bottom: 25px;">Rejoindre DevPro</h2>
+                <input type="text" id="reg-name" placeholder="Nom complet">
+                <input type="email" id="reg-email" placeholder="Email">
+                <input type="password" id="reg-password" placeholder="Mot de passe (6+ car.)">
+                <button onclick="handleRegister()" class="btn-primary">Créer mon compte</button>
+                <p style="font-size: 0.8rem; color: #444; margin-top: 20px;"><span onclick="switchStep('step-login')" style="color: var(--accent); cursor: pointer;">Retour à la connexion</span></p>
+            </div>
+
+            <div id="step-forgot" class="hidden">
+                <h2 style="font-weight: 900; margin-bottom: 10px;">Réinitialisation</h2>
+                <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px;">Redéfinissez votre mot de passe.</p>
+                <input type="email" id="reset-email" placeholder="Confirmez votre Email">
+                <input type="password" id="reset-new-pass" placeholder="Nouveau mot de passe">
+                <button onclick="handlePasswordReset()" class="btn-primary">Mettre à jour</button>
+                <p style="font-size: 0.8rem; color: #444; margin-top: 20px;"><span onclick="switchStep('step-login')" style="color: var(--accent); cursor: pointer;">Annuler</span></p>
+            </div>
+
+            <button onclick="closeAuth()" style="background:none; border:none; color:#333; margin-top:20px; cursor:pointer; font-weight:700;">FERMER</button>
+        </div>
+    </div>
+
+    <script>
+        function updateNav() {
+            const user = localStorage.getItem('userAccountEmail');
+            const btn = document.getElementById('nav-btn');
+            if (user) {
+                const name = localStorage.getItem('userAccountName') || user.split('@')[0];
+                btn.innerText = name.toUpperCase();
+                btn.style.background = "rgba(255,255,255,0.1)"; 
+                btn.style.color = "white";
+                btn.style.border = "1px solid var(--border)";
+            }
+        }
+
+        function handleNavAction() {
+            if (localStorage.getItem('userAccountEmail')) { 
+                window.location.href = "espace-client.html"; 
+            } else { 
+                openAuth(); 
+            }
+        }
+
+        function openAuth() { document.getElementById('auth-overlay').style.display = 'flex'; }
+        function closeAuth() { document.getElementById('auth-overlay').style.display = 'none'; }
+        
+        function switchStep(id) {
+            document.getElementById('step-login').classList.add('hidden');
+            document.getElementById('step-register').classList.add('hidden');
+            document.getElementById('step-forgot').classList.add('hidden');
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function handleLogin() {
+            const u = document.getElementById('login-user').value.trim().toLowerCase();
+            const p = document.getElementById('login-pass').value;
+            
+            if (u === "admin@devpro.pro" && p === "DevPro2026") {
+                localStorage.setItem('userAccountEmail', u);
+                window.location.href = "admin.html"; return;
+            }
+            
+            const savedPass = localStorage.getItem('userPass_' + u);
+            if (savedPass && p === savedPass) { 
+                successLogin(u); 
+            } else { 
+                alert("Identifiants incorrects."); 
+            }
+        }
+
+        function handleRegister() {
+            const e = document.getElementById('reg-email').value.trim().toLowerCase();
+            const p = document.getElementById('reg-password').value;
+            const n = document.getElementById('reg-name').value.trim();
+            
+            if (e && p.length >= 6 && n) {
+                localStorage.setItem('userPass_' + e, p);
+                localStorage.setItem('userAccountName', n);
+                successLogin(e);
+            } else { 
+                alert("Veuillez remplir tous les champs (Mot de passe : 6 car. min)."); 
+            }
+        }
+
+        function handlePasswordReset() {
+            const e = document.getElementById('reset-email').value.trim().toLowerCase();
+            const p = document.getElementById('reset-new-pass').value;
+            
+            if (localStorage.getItem('userPass_' + e)) {
+                if (p.length >= 6) {
+                    localStorage.setItem('userPass_' + e, p);
+                    alert("Mot de passe mis à jour !");
+                    switchStep('step-login');
+                } else { alert("Minimum 6 caractères."); }
+            } else { alert("Compte inconnu."); }
+        }
+
+        function successLogin(email) {
+            localStorage.setItem('userAccountEmail', email);
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            setTimeout(() => window.location.href = "espace-client.html", 1000);
+        }
+
+        // Fermer la modale si on clique à côté
+        window.onclick = function(event) {
+            const overlay = document.getElementById('auth-overlay');
+            if (event.target == overlay) { closeAuth(); }
+        }
+
+        window.onload = updateNav;
+    </script>
+</body>
+</html>
