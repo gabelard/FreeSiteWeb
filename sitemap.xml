@@ -1,8 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://gabelard.github.io/FreeSiteWeb/</loc>
-    <lastmod>2026-04-07</lastmod>
+    <loc>https://gabelard.github.io/FreeSiteWeb/index.html</loc>
+    <lastmod>2026-04-10</lastmod>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://gabelard.github.io/FreeSiteWeb/services.html</loc>
+    <lastmod>2026-04-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://gabelard.github.io/FreeSiteWeb/boutique.html</loc>
+    <lastmod>2026-04-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://gabelard.github.io/FreeSiteWeb/contact.html</loc>
+    <lastmod>2026-04-10</lastmod>
+    <priority>0.7</priority>
+  </url>
+    <url>
+    <loc>https://gabelard.github.io/FreeSiteWeb/espace-client/html</loc>
+    <lastmod>2026-04-10</lastmod>
+    <priority>0.7</priority>
   </url>
 </urlset>
