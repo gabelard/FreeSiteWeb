@@ -390,20 +390,47 @@ function handleFormSubmit(event) {
     }
 
     function confirmBooking() {
-    if (document.getElementById("robot_check").value !== "") return;
     const email = document.getElementById("userEmail").value;
-    if (!email.includes('@')) return alert("Email invalide");
-    
+    if (!email) return alert("Veuillez entrer votre email");
+
     const time = window.tempTime;
     const dateStr = selectedDateObj.toLocaleDateString('fr-FR');
-    
-    // --- LIAISON AVEC L'ADMIN ---
+    const isoDate = selectedDateObj.toISOString().split('T')[0];
+    const rawID = `rdv-${isoDate}-${time}`;
+
+    // --- 1. ENREGISTREMENT POUR LE CALENDRIER (VISUEL) ---
+    localStorage.setItem(rawID, email);
+
+    // --- 2. ENREGISTREMENT POUR L'ADMIN (SYNCHRONISATION) ---
     const nouveauRDV = {
         email: email,
-        subject: "Session DevPro (Réservation Calendrier)",
+        subject: "Réservation Session Web",
         date: `${dateStr} à ${time}`,
+        rawID: rawID, // Crucial pour que l'admin puisse supprimer le créneau
         timestamp: new Date().getTime()
     };
+
+    // On récupère la liste existante ou on crée un tableau vide
+    let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+    appointments.push(nouveauRDV);
+    
+    // On sauvegarde la liste mise à jour
+    localStorage.setItem('appointments', JSON.stringify(appointments));
+
+    // --- 3. ENVOI EMAILJS (VOTRE CODE EXISTANT) ---
+    /* 
+    emailjs.send("service_id", "template_id", {
+        to_email: email,
+        date: dateStr,
+        time: time
+    });
+    */
+
+    alert("Rendez-vous confirmé !");
+    closeModal();
+    renderCalendar(); // Rafraîchir le calendrier pour afficher le créneau occupé
+}
+
 
     // On récupère les rendez-vous existants pour l'admin
     let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
