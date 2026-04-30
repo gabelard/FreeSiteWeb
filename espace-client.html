@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Espace Client | Free Site Web</title>
+    <title>Espace Client | FreeSiteWeb</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -38,7 +38,7 @@
         .nav-link {
             padding: 14px 18px; color: var(--text-dim); text-decoration: none;
             border-radius: 12px; margin-bottom: 8px; display: flex; align-items: center;
-            gap: 12px; font-weight: 600; font-size: 0.95rem;
+            gap: 12px; font-weight: 600; font-size: 0.95rem; cursor: pointer;
         }
 
         .nav-link:hover, .nav-link.active { background: rgba(255, 255, 255, 0.05); color: white; }
@@ -52,8 +52,8 @@
         .header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
         h1 { font-size: 2.2rem; font-weight: 800; margin: 0; letter-spacing: -1px; }
 
-        .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 300px; }
-        @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; gap: 20px; } }
+        .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
 
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 25px; margin-bottom: 25px; }
 
@@ -61,33 +61,34 @@
         .progress-container { width: 100%; height: 8px; background: #1a1a1a; border-radius: 10px; margin: 15px 0; overflow: hidden; }
         .progress-bar { height: 100%; background: var(--accent); box-shadow: 0 0 15px var(--accent-glow); width: 0%; transition: width 1.5s ease-in-out; }
 
-        /* --- CHAT --- */
-        .chat-area { height: 500px; display: flex; flex-direction: column; }
-        #chat-messages { flex: 1; overflow-y: auto; padding-right: 10px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
-        .msg { max-width: 80%; padding: 12px 16px; border-radius: 15px; font-size: 0.9rem; line-height: 1.4; position: relative; }
-        .msg-admin { background: #1c1c1e; align-self: flex-start; color: #fff; border-bottom-left-radius: 4px; }
-        .msg-user { background: var(--accent); align-self: flex-end; color: #fff; border-bottom-right-radius: 4px; }
-        .msg-time { font-size: 0.6rem; opacity: 0.5; margin-top: 4px; display: block; text-align: right; }
+        /* --- CHAT AREA --- */
+        .chat-area { height: 550px; display: flex; flex-direction: column; }
+        #chat-messages { flex: 1; overflow-y: auto; padding-right: 10px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
         
-        input[type="text"] {
-            flex: 1; background: #151515; border: 1px solid var(--border);
-            padding: 12px; border-radius: 12px; color: white; outline: none;
-        }
+        .msg { max-width: 75%; padding: 12px 18px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; position: relative; }
+        .msg-admin { background: #262629; align-self: flex-start; color: #fff; border-bottom-left-radius: 4px; }
+        .msg-user { background: var(--accent); align-self: flex-end; color: #fff; border-bottom-right-radius: 4px; }
+        .msg-time { font-size: 0.7rem; opacity: 0.5; margin-top: 5px; display: block; }
 
-        .logout { color: var(--danger); margin-top: auto; padding: 15px; text-decoration: none; font-weight: 700; text-align: center; border: 1px solid rgba(255,69,58,0.2); border-radius: 12px; }
+        .chat-input-container { display: flex; gap: 10px; background: #151515; padding: 10px; border-radius: 16px; border: 1px solid var(--border); }
+        .chat-input-container input { flex: 1; background: transparent; border: none; color: white; outline: none; padding: 5px 10px; }
+        .chat-input-container button { background: var(--accent); border: none; color: white; padding: 8px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+
+        .logout { color: var(--danger); margin-top: auto; padding: 15px; text-decoration: none; font-weight: 700; text-align: center; border: 1px solid rgba(255,69,58,0.2); border-radius: 12px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <nav>
-        <a href="#" class="logo">Dev<span>Pro</span></a>
-        <a href="#" class="nav-link active" onclick="showView('dash')">📊 Dashboard</a>
-        <a href="#" class="nav-link" onclick="showView('support')">💬 Support Direct</a>
-        <a href="#" class="nav-link" onclick="showView('logs')">🔒 Sécurité</a>
-        <a href="javascript:void(0)" onclick="logout()" class="logout">Déconnexion</a>
+        <div class="logo">Free<span>Site</span>Web</div>
+        <div class="nav-link active" onclick="showView('dash', this)">📊 Dashboard</div>
+        <div class="nav-link" onclick="showView('support', this)">💬 Support Direct</div>
+        <div class="nav-link" onclick="showView('logs', this)">🔒 Sécurité</div>
+        <div onclick="logout()" class="logout">Déconnexion</div>
     </nav>
 
     <main>
+        <!-- VIEW: DASHBOARD -->
         <div id="view-dash" class="view" style="display: block;">
             <div class="header-row">
                 <div>
@@ -128,44 +129,53 @@
             </div>
         </div>
 
+        <!-- VIEW: SUPPORT (CONNECTED TO ADMIN) -->
         <div id="view-support" class="view">
             <h1>Support Direct</h1>
-            <p style="color: var(--text-dim); margin-bottom: 30px;">Canal sécurisé avec l'équipe technique.</p>
+            <p style="color: var(--text-dim); margin-bottom: 30px;">Discutez en direct avec nos développeurs.</p>
             
             <div class="card chat-area">
-                <div id="chat-messages"></div>
-                <div style="display:flex; gap:10px;">
+                <div id="chat-messages">
+                    <!-- Messages will appear here -->
+                </div>
+                <div class="chat-input-container">
                     <input type="text" id="chat-input-field" placeholder="Écrivez votre message..." onkeypress="if(event.key === 'Enter') sendMessage()">
-                    <button onclick="sendMessage()" style="background:var(--accent); border:none; color:white; padding:0 25px; border-radius:12px; font-weight:700; cursor:pointer;">Envoyer</button>
+                    <button onclick="sendMessage()">Envoyer</button>
                 </div>
             </div>
         </div>
 
+        <!-- VIEW: LOGS -->
         <div id="view-logs" class="view">
             <h1>Sécurité</h1>
+            <p style="color: var(--text-dim); margin-bottom: 30px;">Historique récent de vos connexions.</p>
             <div class="card" id="log-list"></div>
         </div>
     </main>
 
     <script>
+        // CONFIGURATION
         const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1486645187789979658/peP3yEJg0Tko9ZFr5lA0XGDjYA8UBj2bNugpQGzJYa9VrPHaDTtdA1Lvpe2c1A_AHfQw";
         let userEmail = localStorage.getItem('userAccountEmail');
+        let userName = localStorage.getItem('userAccountName') || "Client";
 
         window.onload = function() {
             if(!userEmail) { window.location.href = "index.html"; return; }
             
-            document.getElementById('welcome-name').innerText = "Bonjour, " + (localStorage.getItem('userAccountName') || "Client");
+            document.getElementById('welcome-name').innerText = "Bonjour, " + userName;
             
             syncProjectData();
             renderChat();
             loadLogs();
 
-            // Rafraîchissement auto des données et du chat
-            setInterval(syncProjectData, 3000);
-            setInterval(renderChat, 2000);
+            // Boucle de rafraîchissement (toutes les 2 secondes)
+            setInterval(() => {
+                syncProjectData();
+                renderChat();
+            }, 2000);
         }
 
-        // --- SYNCHRONISATION AVEC L'ADMIN ---
+        // --- SYNC AVEC L'ADMIN (DASHBOARD) ---
         function syncProjectData() {
             const name = localStorage.getItem('admin_proj_name') || "Aucun projet actif";
             const percent = localStorage.getItem('admin_proj_percent') || "0";
@@ -177,28 +187,47 @@
             document.getElementById('display-deadline').innerText = deadline;
         }
 
-        // --- MESSAGERIE ---
+        // --- SYNC AVEC L'ADMIN (MESSAGERIE) ---
         function sendMessage() {
             const input = document.getElementById('chat-input-field');
             const text = input.value.trim();
             if(!text) return;
 
+            // On utilise une clé unique basée sur l'email pour le stockage
             const storageKey = 'chat_' + userEmail.toLowerCase();
             let history = JSON.parse(localStorage.getItem(storageKey)) || [];
 
-            history.push({
+            const newMsg = {
                 sender: 'CLIENT',
                 text: text,
                 time: new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})
-            });
+            };
 
+            history.push(newMsg);
             localStorage.setItem(storageKey, JSON.stringify(history));
             
+            // Envoyer aussi à l'admin global pour la notification (facultatif selon ta logique admin)
+            localStorage.setItem('dernier_message_client', JSON.stringify({
+                sender: userName,
+                email: userEmail,
+                text: text
+            }));
+
             // Notification Discord
             fetch(DISCORD_WEBHOOK, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ content: `🔔 **Nouveau message de ${userEmail}** : ${text}` })
+                body: JSON.stringify({ 
+                    embeds: [{
+                        title: "Nouveau message Support",
+                        color: 5814783,
+                        fields: [
+                            { name: "Utilisateur", value: userName, inline: true },
+                            { name: "Email", value: userEmail, inline: true },
+                            { name: "Message", value: text }
+                        ]
+                    }]
+                })
             });
 
             input.value = "";
@@ -207,15 +236,17 @@
 
         function renderChat() {
             const box = document.getElementById('chat-messages');
-            const history = JSON.parse(localStorage.getItem('chat_' + userEmail.toLowerCase())) || [];
+            const storageKey = 'chat_' + userEmail.toLowerCase();
+            const history = JSON.parse(localStorage.getItem(storageKey)) || [];
             
             const html = history.map(m => `
                 <div class="msg ${m.sender === 'ADMIN' ? 'msg-admin' : 'msg-user'}">
                     ${m.text}
-                    <span class="msg-time">${m.time}</span>
+                    <span class="msg-time" style="text-align: ${m.sender === 'ADMIN' ? 'left' : 'right'}">${m.time}</span>
                 </div>
             `).join('');
 
+            // Mise à jour seulement si le contenu a changé pour éviter les sauts de scroll
             if(box.innerHTML !== html) {
                 box.innerHTML = html;
                 box.scrollTop = box.scrollHeight;
@@ -223,11 +254,12 @@
         }
 
         // --- NAVIGATION ---
-        function showView(viewId) {
+        function showView(viewId, element) {
             document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
             document.getElementById('view-' + viewId).style.display = 'block';
-            event.currentTarget.classList.add('active');
+            element.classList.add('active');
         }
 
         function loadLogs() {
@@ -237,13 +269,21 @@
                     <span style="color:var(--text-dim)">${l.date} à ${l.time}</span>
                     <span style="color:var(--success); font-weight:700;">Connexion autorisée</span>
                 </div>
-            `).join('') || "Aucun log.";
+            `).join('') || "<p style='color:var(--text-dim)'>Aucun log de sécurité disponible.</p>";
         }
 
         function logout() {
             localStorage.removeItem('userAccountEmail');
             window.location.href = "index.html";
         }
+
+        // Ecouter les changements de LocalStorage (pour les réponses Admin en temps réel)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'chat_' + userEmail.toLowerCase() || e.key.includes('admin_proj')) {
+                renderChat();
+                syncProjectData();
+            }
+        });
     </script>
 </body>
 </html>
