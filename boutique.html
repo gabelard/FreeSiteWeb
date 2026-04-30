@@ -259,13 +259,12 @@
         function handleLogin() {
             const u = document.getElementById('login-user').value.trim().toLowerCase();
             const p = document.getElementById('login-pass').value;
-            if (u === "admin@devpro.pro" && p === "DevPro2026") {
-                localStorage.setItem('userAccountEmail', u);
-                window.location.href = "admin.html"; return;
-            }
+            
             if (localStorage.getItem('userPass_' + u) === p) {
                 successAuth(u);
-            } else { alert("Identifiants incorrects."); }
+            } else { 
+                alert("Identifiants incorrects."); 
+            }
         }
 
         function handleRegister() {
