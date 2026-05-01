@@ -444,7 +444,26 @@ function cancelBooking() {
         renderSlots();
     }
 }
+// À insérer dans la fonction de confirmation de réservation de contact.html
+function sauvegarderPourAdmin(email, dateSelectionnee, heureSelectionnee, rdvID) {
+    // 1. On récupère la liste actuelle des RDV ou on crée un tableau vide
+    let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
 
+    // 2. On crée l'objet du nouveau rendez-vous
+    const nouveauRDV = {
+        email: email,
+        subject: "Session Web Design", // Ou autre sujet
+        date: dateSelectionnee + " à " + heureSelectionnee,
+        rawID: rdvID, // L'ID qui permet à l'admin de supprimer le créneau dans le calendrier
+        timestamp: new Date().getTime()
+    };
+
+    // 3. On l'ajoute à la liste et on sauvegarde
+    appointments.push(nouveauRDV);
+    localStorage.setItem('appointments', JSON.stringify(appointments));
+    
+    console.log("RDV synchronisé pour l'admin !");
+}
     function changeMonth(dir) { currentViewDate.setMonth(currentViewDate.getMonth() + dir); renderCalendar(); }
 </script>
 </body>
