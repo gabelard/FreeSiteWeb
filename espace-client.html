@@ -88,7 +88,6 @@
     </nav>
 
     <main>
-        <!-- VIEW: DASHBOARD -->
         <div id="view-dash" class="view" style="display: block;">
             <div class="header-row">
                 <div>
@@ -129,15 +128,12 @@
             </div>
         </div>
 
-        <!-- VIEW: SUPPORT (CONNECTED TO ADMIN) -->
         <div id="view-support" class="view">
             <h1>Support Direct</h1>
             <p style="color: var(--text-dim); margin-bottom: 30px;">Discutez en direct avec nos développeurs.</p>
             
             <div class="card chat-area">
-                <div id="chat-messages">
-                    <!-- Messages will appear here -->
-                </div>
+                <div id="chat-messages"></div>
                 <div class="chat-input-container">
                     <input type="text" id="chat-input-field" placeholder="Écrivez votre message..." onkeypress="if(event.key === 'Enter') sendMessage()">
                     <button onclick="sendMessage()">Envoyer</button>
@@ -145,7 +141,6 @@
             </div>
         </div>
 
-        <!-- VIEW: LOGS -->
         <div id="view-logs" class="view">
             <h1>Sécurité</h1>
             <p style="color: var(--text-dim); margin-bottom: 30px;">Historique récent de vos connexions.</p>
@@ -154,28 +149,32 @@
     </main>
 
     <script>
-        // CONFIGURATION
         const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1486645187789979658/peP3yEJg0Tko9ZFr5lA0XGDjYA8UBj2bNugpQGzJYa9VrPHaDTtdA1Lvpe2c1A_AHfQw";
         let userEmail = localStorage.getItem('userAccountEmail');
         let userName = localStorage.getItem('userAccountName') || "Client";
 
+        // --- ECOUTE DU BRIDGE (POUR RECEVOIR DE L'ADMIN) ---
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'WRITE_TO_WEB') {
+                localStorage.setItem(event.data.key, event.data.value);
+                if (event.data.key.includes('admin_proj')) syncProjectData();
+                if (event.data.key.includes('chat_')) renderChat();
+            }
+        });
+
         window.onload = function() {
             if(!userEmail) { window.location.href = "index.html"; return; }
-            
             document.getElementById('welcome-name').innerText = "Bonjour, " + userName;
-            
             syncProjectData();
             renderChat();
             loadLogs();
 
-            // Boucle de rafraîchissement (toutes les 2 secondes)
             setInterval(() => {
                 syncProjectData();
                 renderChat();
             }, 2000);
         }
 
-        // --- SYNC AVEC L'ADMIN (DASHBOARD) ---
         function syncProjectData() {
             const name = localStorage.getItem('admin_proj_name') || "Aucun projet actif";
             const percent = localStorage.getItem('admin_proj_percent') || "0";
@@ -187,13 +186,11 @@
             document.getElementById('display-deadline').innerText = deadline;
         }
 
-        // --- SYNC AVEC L'ADMIN (MESSAGERIE) ---
         function sendMessage() {
             const input = document.getElementById('chat-input-field');
             const text = input.value.trim();
             if(!text) return;
 
-            // On utilise une clé unique basée sur l'email pour le stockage
             const storageKey = 'chat_' + userEmail.toLowerCase();
             let history = JSON.parse(localStorage.getItem(storageKey)) || [];
 
@@ -205,25 +202,16 @@
 
             history.push(newMsg);
             localStorage.setItem(storageKey, JSON.stringify(history));
-            
-            // Envoyer aussi à l'admin global pour la notification (facultatif selon ta logique admin)
-            localStorage.setItem('dernier_message_client', JSON.stringify({
-                sender: userName,
-                email: userEmail,
-                text: text
-            }));
 
-            // Notification Discord
             fetch(DISCORD_WEBHOOK, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ 
                     embeds: [{
-                        title: "Nouveau message Support",
+                        title: "💬 Message Client",
                         color: 5814783,
                         fields: [
-                            { name: "Utilisateur", value: userName, inline: true },
-                            { name: "Email", value: userEmail, inline: true },
+                            { name: "Client", value: userName + " (" + userEmail + ")", inline: false },
                             { name: "Message", value: text }
                         ]
                     }]
@@ -246,18 +234,15 @@
                 </div>
             `).join('');
 
-            // Mise à jour seulement si le contenu a changé pour éviter les sauts de scroll
             if(box.innerHTML !== html) {
                 box.innerHTML = html;
                 box.scrollTop = box.scrollHeight;
             }
         }
 
-        // --- NAVIGATION ---
         function showView(viewId, element) {
             document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            
             document.getElementById('view-' + viewId).style.display = 'block';
             element.classList.add('active');
         }
@@ -276,14 +261,6 @@
             localStorage.removeItem('userAccountEmail');
             window.location.href = "index.html";
         }
-
-        // Ecouter les changements de LocalStorage (pour les réponses Admin en temps réel)
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'chat_' + userEmail.toLowerCase() || e.key.includes('admin_proj')) {
-                renderChat();
-                syncProjectData();
-            }
-        });
     </script>
 </body>
 </html>
