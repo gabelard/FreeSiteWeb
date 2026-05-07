@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Espace Client | FreeSiteWeb</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
     <style>
         :root {
             --accent: #007aff;
@@ -121,7 +124,7 @@
                     <h3 style="margin-top:0">Statistiques</h3>
                     <div style="display:flex; flex-direction:column; gap:15px;">
                         <div style="display:flex; justify-content:space-between"><span>Disponibilité</span> <span style="color:var(--success)">99.9%</span></div>
-                        <div style="display:flex; justify-content:space-between"><span>Tickets</span> <span>0</span></div>
+                        <div style="display:flex; justify-content:space-between"><span>Tickets</span> <span id="ticket-count">1</span></div>
                         <div style="display:flex; justify-content:space-between"><span>Serveur</span> <span>Paris-01</span></div>
                     </div>
                 </div>
@@ -130,12 +133,17 @@
 
         <div id="view-support" class="view">
             <h1>Support Direct</h1>
-            <p style="color: var(--text-dim); margin-bottom: 30px;">Discutez en direct avec nos développeurs.</p>
+            <p style="color: var(--text-dim); margin-bottom: 30px;">Nous répondons à vos messages par e-mail.</p>
             
             <div class="card chat-area">
-                <div id="chat-messages"></div>
+                <div id="chat-messages">
+                    <div class="msg msg-admin">
+                        Bonjour ! Une question ? Écrivez-nous ici et nous vous répondrons directement par mail.
+                        <span class="msg-time">Support</span>
+                    </div>
+                </div>
                 <div class="chat-input-container">
-                    <input type="text" id="chat-input-field" placeholder="Écrivez votre message..." onkeypress="if(event.key === 'Enter') sendMessage()">
+                    <input type="text" id="chat-input-field" placeholder="Votre message..." onkeypress="if(event.key === 'Enter') sendMessage()">
                     <button onclick="sendMessage()">Envoyer</button>
                 </div>
             </div>
@@ -143,47 +151,27 @@
 
         <div id="view-logs" class="view">
             <h1>Sécurité</h1>
-            <p style="color: var(--text-dim); margin-bottom: 30px;">Historique récent de vos connexions.</p>
+            <p style="color: var(--text-dim); margin-bottom: 30px;">Historique des connexions.</p>
             <div class="card" id="log-list"></div>
         </div>
     </main>
 
     <script>
+        // --- CONFIGURATION ---
+        const EMAILJS_PUBLIC_KEY = "g19d5kYg1h6L7gAgx"; // Remplace ici
         const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1486645187789979658/peP3yEJg0Tko9ZFr5lA0XGDjYA8UBj2bNugpQGzJYa9VrPHaDTtdA1Lvpe2c1A_AHfQw";
+        
         let userEmail = localStorage.getItem('userAccountEmail');
         let userName = localStorage.getItem('userAccountName') || "Client";
 
-        // --- ECOUTE DU BRIDGE (POUR RECEVOIR DE L'ADMIN) ---
-        window.addEventListener('message', (event) => {
-            if (event.data.type === 'WRITE_TO_WEB') {
-                localStorage.setItem(event.data.key, event.data.value);
-                if (event.data.key.includes('admin_proj')) syncProjectData();
-                if (event.data.key.includes('chat_')) renderChat();
-            }
-        });
+        // Initialisation EmailJS
+        (function(){ emailjs.init(EMAILJS_PUBLIC_KEY); })();
 
         window.onload = function() {
             if(!userEmail) { window.location.href = "index.html"; return; }
             document.getElementById('welcome-name').innerText = "Bonjour, " + userName;
             syncProjectData();
-            renderChat();
             loadLogs();
-
-            setInterval(() => {
-                syncProjectData();
-                renderChat();
-            }, 2000);
-        }
-
-        function syncProjectData() {
-            const name = localStorage.getItem('admin_proj_name') || "Aucun projet actif";
-            const percent = localStorage.getItem('admin_proj_percent') || "0";
-            const deadline = localStorage.getItem('admin_proj_deadline') || "Non définie";
-
-            document.getElementById('display-proj-name').innerText = name;
-            document.getElementById('display-proj-percent').innerText = percent + "%";
-            document.getElementById('display-bar').style.width = percent + "%";
-            document.getElementById('display-deadline').innerText = deadline;
         }
 
         function sendMessage() {
@@ -191,53 +179,55 @@
             const text = input.value.trim();
             if(!text) return;
 
-            const storageKey = 'chat_' + userEmail.toLowerCase();
-            let history = JSON.parse(localStorage.getItem(storageKey)) || [];
+            const time = new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+            const box = document.getElementById('chat-messages');
 
-            const newMsg = {
-                sender: 'CLIENT',
-                text: text,
-                time: new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})
-            };
+            // 1. Affichage local (pour l'effet visuel)
+            box.innerHTML += `
+                <div class="msg msg-user">
+                    ${text}
+                    <span class="msg-time" style="text-align: right">${time}</span>
+                </div>
+            `;
+            box.scrollTop = box.scrollHeight;
 
-            history.push(newMsg);
-            localStorage.setItem(storageKey, JSON.stringify(history));
-
+            // 2. Notification Discord (Pour l'Admin)
             fetch(DISCORD_WEBHOOK, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ 
                     embeds: [{
-                        title: "💬 Message Client",
+                        title: "💬 Nouveau Message Support",
                         color: 5814783,
                         fields: [
-                            { name: "Client", value: userName + " (" + userEmail + ")", inline: false },
+                            { name: "Client", value: userName, inline: true },
+                            { name: "Email", value: userEmail, inline: true },
                             { name: "Message", value: text }
-                        ]
+                        ],
+                        footer: { text: "Répondre par e-mail" },
+                        timestamp: new Date().toISOString()
                     }]
                 })
             });
 
+            // 3. Envoi via EmailJS
+            emailjs.send("service_tpa9jpg", "template_iyumdyj", {
+                from_name: userName,
+                from_email: userEmail,
+                message: text
+            }).then(() => {
+                console.log("Mail envoyé !");
+            });
+
             input.value = "";
-            renderChat();
         }
 
-        function renderChat() {
-            const box = document.getElementById('chat-messages');
-            const storageKey = 'chat_' + userEmail.toLowerCase();
-            const history = JSON.parse(localStorage.getItem(storageKey)) || [];
-            
-            const html = history.map(m => `
-                <div class="msg ${m.sender === 'ADMIN' ? 'msg-admin' : 'msg-user'}">
-                    ${m.text}
-                    <span class="msg-time" style="text-align: ${m.sender === 'ADMIN' ? 'left' : 'right'}">${m.time}</span>
-                </div>
-            `).join('');
-
-            if(box.innerHTML !== html) {
-                box.innerHTML = html;
-                box.scrollTop = box.scrollHeight;
-            }
+        function syncProjectData() {
+            // Simulation de données projet (peut être personnalisé par client en localStorage)
+            document.getElementById('display-proj-name').innerText = "Refonte E-commerce";
+            document.getElementById('display-proj-percent').innerText = "65%";
+            document.getElementById('display-bar').style.width = "65%";
+            document.getElementById('display-deadline').innerText = "24 Mai 2024";
         }
 
         function showView(viewId, element) {
@@ -248,13 +238,13 @@
         }
 
         function loadLogs() {
-            const logs = JSON.parse(localStorage.getItem('loginHistory_' + userEmail)) || [];
-            document.getElementById('log-list').innerHTML = logs.map(l => `
+            const now = new Date().toLocaleDateString('fr-FR');
+            document.getElementById('log-list').innerHTML = `
                 <div style="display:flex; justify-content:space-between; padding:15px 0; border-bottom:1px solid var(--border);">
-                    <span style="color:var(--text-dim)">${l.date} à ${l.time}</span>
-                    <span style="color:var(--success); font-weight:700;">Connexion autorisée</span>
+                    <span style="color:var(--text-dim)">${now} à ${new Date().toLocaleTimeString()}</span>
+                    <span style="color:var(--success); font-weight:700;">Session Active</span>
                 </div>
-            `).join('') || "<p style='color:var(--text-dim)'>Aucun log de sécurité disponible.</p>";
+            `;
         }
 
         function logout() {
