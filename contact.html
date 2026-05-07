@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Réservation de Session | FreeSiteWeb</title>
+    <title>Réservation de Session | DevPro</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -126,19 +126,18 @@
 <body>
 
 <nav>
-    <a href="index.html" class="logo">Free<span>Site</span>Web</a>
+    <a href="index.html" class="logo">Dev<span>Pro</span></a>
     <div class="nav-links">
-        <a href="services.html">Expertise</a>
-        <a href="boutique.html">Boutique</a>
+        <a href="expertise.html">Expertise</a>
         <a href="contact.html">Contact</a>
-        <button onclick="handleNavAction()" id="nav-btn" class="btn-login-nav">Espace Client</button>
+        <a href="espace-client.html" class="btn-login-nav">Espace Client</a>
     </div>
 </nav>
 
 <div class="container" id="main-ui">
     <header>
-        <h1>Free<span>Site</span>Web </h1>
-        <p>Réservez un créneau pour votre session personnalisée.</p>
+        <h1>Dev<span>Pro</span> Booking</h1>
+        <p>Sessions disponibles : 09:00 ou 14:00.</p>
     </header>
 
     <div id="calendar-container">
@@ -156,6 +155,7 @@
     </div>
 </div>
 
+<!-- Overlay Authentification -->
 <div id="auth-overlay" class="modal-overlay">
     <div class="auth-modal">
         <div id="step-login">
@@ -167,21 +167,21 @@
         </div>
 
         <div id="step-register" class="hidden">
-            <h2 style="font-weight: 900; margin-bottom: 25px;">Rejoindre Free Site</h2>
+            <h2 style="font-weight: 900; margin-bottom: 25px;">Rejoindre DevPro</h2>
             <input type="text" id="reg-name" placeholder="Nom complet">
             <input type="email" id="reg-email" placeholder="Email">
             <input type="password" id="reg-password" placeholder="Mot de passe (6+ car.)">
             <button onclick="handleRegister()" class="btn-primary">Créer mon compte</button>
             <p style="font-size: 0.8rem; color: #444; margin-top: 20px;"><span onclick="switchStep('step-login')" style="color: var(--accent); cursor: pointer;">Retour</span></p>
         </div>
-
         <button onclick="closeAuth()" style="background:none; border:none; color:#444; margin-top:20px; cursor:pointer; font-weight:700;">FERMER</button>
     </div>
 </div>
 
+<!-- Modal de Réservation -->
 <dialog id="bookingModal">
     <div id="modalNew">
-        <h2 style="margin-top: 0;">Réserver</h2>
+        <h2 style="margin-top: 0;">Réserver cette session</h2>
         <input type="text" id="robot_check" style="display:none;" tabindex="-1">
         <input type="email" id="userEmail" placeholder="votre@email.com">
         <button onclick="confirmBooking()" class="btn-action">CONFIRMER LE RDV</button>
@@ -190,7 +190,7 @@
     <div id="modalExisting" style="display:none; text-align: center;">
         <h2>RDV Confirmé ✅</h2>
         <p style="color: var(--text-dim); margin-bottom: 20px; font-size: 0.9rem;">
-            Le lien de votre session vous sera envoyé directement dans le <b>chat support client</b> quelques minutes avant l'heure prévue.
+            Le lien de votre session vous sera envoyé directement dans le <b>chat support client</b>.
         </p>
         <button id="btnCancel" onclick="cancelBooking()" style="background:none; border:none; color:var(--danger); margin-top:10px; cursor:pointer; font-weight:700; display:block; width:100%;">
             ANNULER LE RDV
@@ -205,6 +205,9 @@
     const _p2 = "h6L7gAgx";
     (function(){ emailjs.init(_p1 + _p2); })();
 
+    // CONFIGURATION SENTINEL (DISCORD)
+    const SENTINEL_WEBHOOK = "https://discord.com/api/webhooks/1499303606413951068/ADBXf4P_Hqg7YB2JrCEFhP0HDazLXfzRDmnVUxJGK5cJ11URfcoIso-YIif9CwZ_QJzx";
+
     const NOW = new Date(); 
     let currentViewDate = new Date(NOW.getFullYear(), NOW.getMonth(), 1);
     let selectedISO = "";
@@ -215,57 +218,13 @@
         renderCalendar();
     };
 
-    function handleNavAction() {
-        if (localStorage.getItem('userAccountEmail')) {
-            window.location.href = "espace-client.html";
-        } else {
-            document.getElementById('auth-overlay').style.display = 'flex';
-        }
-    }
-
-    function closeAuth() { document.getElementById('auth-overlay').style.display = 'none'; }
-    
-    function switchStep(id) {
-        ['step-login', 'step-register'].forEach(s => document.getElementById(s).classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-    }
-
     function updateNav() {
         const user = localStorage.getItem('userAccountEmail');
         const btn = document.getElementById('nav-btn');
-        if (user) {
+        if (user && btn) {
             const name = localStorage.getItem('userAccountName') || user.split('@')[0];
             btn.innerText = name.split(' ')[0].toUpperCase();
-            btn.style.background = "rgba(255,255,255,0.1)";
-            btn.style.color = "white";
         }
-    }
-
-    function handleLogin() {
-        const u = document.getElementById('login-user').value.trim().toLowerCase();
-        const p = document.getElementById('login-pass').value;
-        if (localStorage.getItem('userPass_' + u) === p) {
-            localStorage.setItem('userAccountEmail', u);
-            successAuth();
-        } else alert("Identifiants incorrects.");
-    }
-
-    function handleRegister() {
-        const e = document.getElementById('reg-email').value.trim().toLowerCase();
-        const p = document.getElementById('reg-password').value;
-        const n = document.getElementById('reg-name').value.trim();
-        if (e && p.length >= 6 && n) {
-            localStorage.setItem('userPass_' + e, p);
-            localStorage.setItem('userAccountEmail', e);
-            localStorage.setItem('userAccountName', n);
-            successAuth();
-        } else alert("Infos invalides.");
-    }
-
-    function successAuth() {
-        confetti({ particleCount: 150, spread: 70 });
-        updateNav();
-        setTimeout(() => closeAuth(), 1000);
     }
 
     function renderCalendar() {
@@ -289,16 +248,7 @@
             dayEl.innerText = i;
             const todayMid = new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate());
 
-            // --- MODIFICATION ICI ---
-            // On désactive :
-            // date.getDay() === 1 -> Lundi
-            // date.getDay() === 2 -> Mardi
-            // date.getDay() === 6 -> Samedi
-            // date.getDay() === 0 -> Dimanche
-            const dayOfWeek = date.getDay();
-            const isWeekendOrClosed = [0, 1, 2, 6].includes(dayOfWeek);
-
-            if (date < todayMid || isWeekendOrClosed) {
+            if (date < todayMid || date.getDay() === 0 || date.getDay() === 6) {
                 dayEl.classList.add("disabled");
             } else {
                 dayEl.onclick = () => { 
@@ -318,9 +268,7 @@
     function renderSlots() {
         const grid = document.getElementById("timeSlotGrid");
         grid.innerHTML = "";
-        
-        // On ne garde que 9h et 14h
-        const slots = ["09:00", "14:00"];
+        const slots = ["09:00", "14:00"]; // Horaires fixes demandés
         const currentTime = new Date();
 
         slots.forEach(time => {
@@ -342,38 +290,6 @@
             } else {
                 btn.innerHTML = `${time}`;
             }
-            // Dans contact.html, modifie ta fonction d'envoi comme ceci :
-function handleFormSubmit(event) {
-    event.preventDefault(); // Empêche le rechargement de la page
-
-    // 1. Récupération des données du formulaire
-    const emailClient = document.getElementById('email').value;
-    const sujetClient = document.getElementById('subject').value;
-    const dateClient = document.getElementById('date').value; // Assure-toi d'avoir un <input type="date" id="date">
-
-    // 2. Création de l'objet rendez-vous
-    const nouveauRDV = {
-        email: emailClient,
-        subject: sujetClient,
-        date: dateClient || new Date().toLocaleDateString('fr-FR'), // Date du jour par défaut
-        timestamp: new Date().getTime()
-    };
-
-    // 3. Sauvegarde dans le localStorage pour l'Admin
-    // On récupère la liste existante ou on crée un tableau vide
-    let rendezVousExistants = JSON.parse(localStorage.getItem('appointments')) || [];
-    
-    // On ajoute le nouveau
-    rendezVousExistants.push(nouveauRDV);
-    
-    // On sauvegarde le tout
-    localStorage.setItem('appointments', JSON.stringify(rendezVousExistants));
-
-    // 4. Feedback utilisateur
-    alert("Demande envoyée ! Le service de sécurité Sentinel vous contactera bientôt.");
-    
-    // Optionnel : Envoyer aussi au Webhook Discord si tu veux une double notification
-}
             
             if (!isExpired) {
                 btn.onclick = () => {
@@ -389,81 +305,91 @@ function handleFormSubmit(event) {
         });
     }
 
-    function confirmBooking() {
-    if (document.getElementById("robot_check").value !== "") return;
-    const email = document.getElementById("userEmail").value;
-    if (!email.includes('@')) return alert("Email invalide");
-    
-    const time = window.tempTime;
-    const dateStr = selectedDateObj.toLocaleDateString('fr-FR');
-    
-    // --- LIAISON AVEC L'ADMIN ---
-    const nouveauRDV = {
-        email: email,
-        subject: "Session DevPro (Réservation Calendrier)",
-        date: `${dateStr} à ${time}`,
-        timestamp: new Date().getTime()
-    };
-
-    // On récupère les rendez-vous existants pour l'admin
-    let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
-    appointments.push(nouveauRDV);
-    
-    // On sauvegarde pour l'Admin ET pour le Calendrier
-    localStorage.setItem('appointments', JSON.stringify(appointments));
-    localStorage.setItem(`rdv-${selectedISO}-${time}`, email);
-    // ----------------------------
-
-    // Notification Email via EmailJS
-    emailjs.send('service_tpa9jpg', 'template_egv1gq1', {
-        to_email: email,
-        date: dateStr,
-        time: time,
-        meet_link: "Le lien de session vous sera envoyé dans le chat support client sur DevPro."
-    }).then(() => {
-        confetti({ particleCount: 150, spread: 70 });
-        document.getElementById("bookingModal").close();
-        renderSlots();
-    });
-}
-function cancelBooking() {
-    if (confirm("Annuler ce rendez-vous ?")) {
+    async function confirmBooking() {
+        if (document.getElementById("robot_check").value !== "") return;
+        const email = document.getElementById("userEmail").value;
+        if (!email.includes('@')) return alert("Email invalide");
+        
         const time = window.tempTime;
-        const dateStr = selectedDateObj.toLocaleDateString('fr-FR');
-        const fullDateString = `${dateStr} à ${time}`;
+        const dateStr = selectedDateObj.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        
+        // --- ENVOI SENTINEL (DISCORD) ---
+        const payload = {
+            username: "Sentinel Booking",
+            embeds: [{
+                title: "📅 Nouvelle Session Réservée",
+                description: `Un client a réservé un créneau via le portail.`,
+                color: 0x007aff,
+                fields: [
+                    { name: "👤 Client", value: email, inline: false },
+                    { name: "📆 Date", value: dateStr, inline: true },
+                    { name: "⏰ Heure", value: time, inline: true }
+                ],
+                footer: { text: "DevPro Automator" },
+                timestamp: new Date().toISOString()
+            }]
+        };
 
-        // 1. Retirer du calendrier visuel
-        localStorage.removeItem(`rdv-${selectedISO}-${time}`);
+        try {
+            await fetch(SENTINEL_WEBHOOK, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } catch (e) { console.error("Discord Error", e); }
 
-        // 2. Retirer de la liste Admin
-        let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
-        appointments = appointments.filter(app => !(app.date === fullDateString));
-        localStorage.setItem('appointments', JSON.stringify(appointments));
-
-        document.getElementById("bookingModal").close();
-        renderSlots();
+        // --- ENVOI EMAILJS ---
+        emailjs.send('service_tpa9jpg', 'template_egv1gq1', {
+            to_email: email,
+            date: dateStr,
+            time: time,
+            meet_link: "Lien envoyé via support client."
+        }).then(() => {
+            localStorage.setItem(`rdv-${selectedISO}-${time}`, email);
+            confetti({ particleCount: 150, spread: 70 });
+            document.getElementById("bookingModal").close();
+            renderSlots();
+        });
     }
-}
-// À insérer dans la fonction de confirmation de réservation de contact.html
-function sauvegarderPourAdmin(email, dateSelectionnee, heureSelectionnee, rdvID) {
-    // 1. On récupère la liste actuelle des RDV ou on crée un tableau vide
-    let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
 
-    // 2. On crée l'objet du nouveau rendez-vous
-    const nouveauRDV = {
-        email: email,
-        subject: "Session Web Design", // Ou autre sujet
-        date: dateSelectionnee + " à " + heureSelectionnee,
-        rawID: rdvID, // L'ID qui permet à l'admin de supprimer le créneau dans le calendrier
-        timestamp: new Date().getTime()
-    };
+    function cancelBooking() {
+        if (confirm("Voulez-vous vraiment annuler ce rendez-vous ?")) {
+            localStorage.removeItem(`rdv-${selectedISO}-${window.tempTime}`);
+            document.getElementById("bookingModal").close();
+            renderSlots();
+        }
+    }
 
-    // 3. On l'ajoute à la liste et on sauvegarde
-    appointments.push(nouveauRDV);
-    localStorage.setItem('appointments', JSON.stringify(appointments));
-    
-    console.log("RDV synchronisé pour l'admin !");
-}
+    // Fonctions Auth basiques pour le démo
+    function handleNavAction() {
+        if (localStorage.getItem('userAccountEmail')) {
+            alert("Accès à votre espace client...");
+        } else {
+            document.getElementById('auth-overlay').style.display = 'flex';
+        }
+    }
+    function closeAuth() { document.getElementById('auth-overlay').style.display = 'none'; }
+    function switchStep(id) {
+        ['step-login', 'step-register'].forEach(s => document.getElementById(s).classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+    }
+    function handleLogin() {
+        const u = document.getElementById('login-user').value.trim().toLowerCase();
+        localStorage.setItem('userAccountEmail', u);
+        successAuth();
+    }
+    function handleRegister() {
+        const e = document.getElementById('reg-email').value.trim().toLowerCase();
+        const n = document.getElementById('reg-name').value.trim();
+        localStorage.setItem('userAccountEmail', e);
+        localStorage.setItem('userAccountName', n);
+        successAuth();
+    }
+    function successAuth() {
+        updateNav();
+        confetti({ particleCount: 100 });
+        setTimeout(closeAuth, 500);
+    }
     function changeMonth(dir) { currentViewDate.setMonth(currentViewDate.getMonth() + dir); renderCalendar(); }
 </script>
 </body>
